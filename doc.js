@@ -30,10 +30,10 @@ app.use(serveStatic(config.origin))
 
 app.use( (req, res, next) => {
     /* support cors */
-    res.setHeader("Access-Control-Allow-Origin","*");
-    res.setHeader("Access-Control-Allow-Headers","*");
-    res.setHeader("X-Powered-By","node/5.2.0");
-    res.setHeader("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
+    res.setHeader('Access-Control-Allow-Origin','*');
+    res.setHeader('Access-Control-Allow-Headers','*');
+    res.setHeader('X-Powered-By','node/5.2.0');
+    res.setHeader('Access-Control-Allow-Methods','PUT,POST,GET,DELETE,OPTIONS');
     return next();
 })
 
@@ -42,45 +42,45 @@ app.use('/hook', (req, res, next) => {
     let body = req.body,
         qs = querystring.parse(req._parsedUrl.query);
 
-    if (req.method !== 'POST') {
+    if ( req.method !== 'POST' ) {
         return next(405)
     }
 
-    if (body.ref !== 'refs/heads/master') {
-        return next(JSON.stringify({"code" : 406, "msg" : "Bad request origin"})) 
+    if ( body.ref !== 'refs/heads/master' ) {
+        return next(JSON.stringify({'code' : 406, 'msg' : 'Bad request origin'})) 
     }
-    if ( !qs.token === 'document') {
-        return next(JSON.stringify({"code" : 406, "msg" : "Bad token"}))   
+    if ( !qs.token === 'document' ) {
+        return next(JSON.stringify({'code' : 406, 'msg' : 'Bad token'}))   
     }
 
     return res.end()
 })
 
-app.use("/editor/", (req, res, next) => {
+app.use('/editor/', ( req, res, next ) => {
     let route  = decodeURIComponent(req.url).replace(/\/$/,''),
-        type = path.extname(route),
-        data = {
+        type   = path.extname(route),
+        data   = {
             markContent : '',
             title : '',
             cates : cateArr,
             selected : ''
         },
-        editPath = config.edit + "index.html",
+        editPath = config.edit + 'index.html',
         filePath;
-    if(type){
-        res.writeHead(200,{
+    if ( type ) {
+        res.writeHead(200, {
             'Content-Type':  mime.lookup(type) + '; charset=UTF-8'
         });
         fs.createReadStream(config.edit + route).pipe(res);
-    }else{
-        if(route !== '/new'){
-            filePath = config.markdown + route + ".md";
-            if(fs.existsSync(filePath)){
+    } else {
+        if ( route !== '/new' ) {
+            filePath = config.markdown + route + '.md';
+            if ( fs.existsSync(filePath) ) {
                 sendFile(filePath).then((filedata) => {
                     let _parse       = Object.keys(querystring.parse(filedata,'---',null)),
                         _obj         = querystring.parse(_parse[1],'\n',': '),
-                        _title       = _obj["title"],
-                        _cate        = _obj["categories"];
+                        _title       = _obj['title'],
+                        _cate        = _obj['categories'];
                     data.title       = _title;
                     data.selected    = _cate;
                     data.markContent = _parse[2];
@@ -109,30 +109,30 @@ app.use("/editor/", (req, res, next) => {
     }
 })
 
-app.use('/delete', (req, res, next) => {
+app.use('/delete', ( req, res, next ) => {
     let route      = decodeURIComponent(req.url).replace(/\/$/,''),
-        filePath   = config.markdown + route + ".md",
+        filePath   = config.markdown + route + '.md',
         statusCode = 200,
         data = {
             'code' : 0,
             'msg' : ''
         }
-    if (isAjax(req)) {
+    if ( isAjax(req) ) {
         if ( req.method !== 'POST' ) {
             return next(405)
         }
-        if(fs.existsSync(filePath)){
+        if ( fs.existsSync(filePath) ) {
             try{
                 fs.unlinkSync(filePath);
                 exec('sh generate.sh ' + docPath, (err, stdout, stderr) => {
-                    if(err || stderr){
+                    if ( err || stderr ) {
                         statusCode = 500;
                         data.code  = 3;
-                        data.msg   = "Internal Server Error";
-                    }else{
-                        data.msg   = "delete success";
+                        data.msg   = 'Internal Server Error';
+                    } else {
+                        data.msg   = 'delete success';
                         res.writeHead(statusCode, {
-                            "Content-Type" : "application/json"
+                            'Content-Type' : 'application/json'
                         })
                         res.end(new Buffer(JSON.stringify(data, null, 4)));
                     }
@@ -141,15 +141,15 @@ app.use('/delete', (req, res, next) => {
             } catch(e) {
                 statusCode = 500;
                 data.code  = 2;
-                data.msg   = "Internal Server Error"
+                data.msg   = 'Internal Server Error'
             }
         }else{
             statusCode = 404
             data.code  = 1;
-            data.msg   = "Not Found"
+            data.msg   = 'Not Found'
         }
         res.writeHead(statusCode, {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
         })
         res.end(new Buffer(JSON.stringify(data, null, 4)));
     } else {
@@ -160,7 +160,7 @@ app.use('/delete', (req, res, next) => {
 
 /* save new document */
 app.use('/save', (req, res, next) => {
-    if (isAjax(req)) {
+    if ( isAjax(req) ) {
         if ( req.method !== 'POST' ) {
             return next(405)
         }
@@ -173,16 +173,16 @@ app.use('/save', (req, res, next) => {
                 'msg' : ''
             }
         
-        if ( body.title.trim() === '' ) {
+        if (!body.title.trim() ) {
             statusCode = 406;
             data.code  = 1;
-            data.msg   = "title is empty";
+            data.msg   = 'title is empty';
         }
 
-        if ( body.content.trim() === '' ) {
+        if (!body.content.trim() ) {
             statusCode = 406;
             data.code  = 1;
-            data.msg   = "content is empty";
+            data.msg   = 'content is empty';
         }
 
         body.categories = cateArr[body.categories];
@@ -191,7 +191,7 @@ app.use('/save', (req, res, next) => {
         let md = '---\n';
         delete body.content
         body.date = dateFormate(new Date())
-        md += querystring.stringify(body, '\n', ': ',{
+        md += querystring.stringify(body, '\n', ': ', {
             encodeURIComponent : (e) => {
                 return e
             }
@@ -200,18 +200,18 @@ app.use('/save', (req, res, next) => {
         md += content
         
         try{
-            let writeStream = fs.createWriteStream(config.markdown + "/" + body.title.trim() + '.md', {encoding: 'utf8'});
+            let writeStream = fs.createWriteStream(config.markdown + '/' + body.title.trim() + '.md', {encoding: 'utf8'});
             intoStream(md).pipe(writeStream);
-            writeStream.on("finish", () => {
+            writeStream.on('finish', () => {
                 exec('sh generate.sh ' + docPath, (err, stdout, stderr) => {
-                    if(err || stderr){
+                    if ( err || stderr ) {
                         statusCode = 500;
                         data.code  = 3;
-                        data.msg   = "Internal Server Error";
-                    }else{
-                        data.msg   = "delete success";
+                        data.msg   = 'Internal Server Error';
+                    } else {
+                        data.msg   = 'delete success';
                         res.writeHead(statusCode, {
-                            "Content-Type" : "application/json"
+                            'Content-Type' : 'application/json'
                         })
                         res.end(new Buffer(JSON.stringify(data, null, 4)));
                     }
@@ -220,9 +220,9 @@ app.use('/save', (req, res, next) => {
         } catch(e) {
             statusCode = 500;
             data.code  = 2;
-            data.msg   = "write fail";
+            data.msg   = 'write fail';
             res.writeHead(statusCode, {
-                "Content-Type" : "application/json"
+                'Content-Type' : 'application/json'
             })
             res.end(new Buffer(JSON.stringify(data, null, 4)));
         }
@@ -235,10 +235,10 @@ app.use('/save', (req, res, next) => {
 app.use( (err, req, res, next) => {
     let code = 500,
         msg  = '';
-    if( typeof err === 'number' ){
+    if ( typeof err === 'number' ) {
         code = err;
         msg  = statusCodes[code];
-    }else{
+    } else {
         try{
             let err = JSON.parse(err);
             code = err.code;
@@ -248,19 +248,19 @@ app.use( (err, req, res, next) => {
         }
     }
 
-    if(code === 404){
+    if ( code === 404 ) {
         msg = '<center><h1>404 Not Found</h1></center><hr><center>';
         res.writeHead(code, {
             'Content-Type' : 'text/html; charset=UTF-8'
         });
-    }else{
+    } else {
         res.statusCode = code;
     }
 
     res.end(new Buffer(msg));
 })
 
-function render(paths, data){
+function render (paths, data) {
     return new Promise((resolve, reject) => {
         ejs.renderFile(paths, data, (err, str) => {
             if (err) {
@@ -272,31 +272,31 @@ function render(paths, data){
     })
 }
 
-function sendFile(fpath) {
+function sendFile (fpath) {
     return new Promise( (resolve) => {
         let chunks = [],
             size = 0,
             buf,
             str;
         let rs  = fs.createReadStream(fpath);
-        rs.on("data",(chunk) => {
+        rs.on('data',(chunk) => {
             chunks.push(chunk);
             size += chunk.length
         })
-        rs.on("end",() => {
+        rs.on('end',() => {
             buf = Buffer.concat(chunks,size);
             resolve(String(buf))
         })
     })
 }
 
-function isAjax(req){
+function isAjax (req){
     return req.headers['x-requested-with'] && req.headers['x-requested-with'].toLowerCase() == 'xmlhttprequest';
 }
 
-function dateFormate(date) {
+function dateFormate (date) {
     let s = '';
-    s += [date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-') + " ";
+    s += [date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-') + ' ';
     s += [date.getHours(), date.getMinutes(), date.getSeconds()].join(':')
     return s;
 }
