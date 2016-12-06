@@ -15,11 +15,11 @@ const querystring = require('querystring'),
 
 
 const statusCodes = http.STATUS_CODES,
-      config      = require('./config.json'),
-      cateArr     = config.category.split('|'),
-      docPath     = config.docPath,
       args        = process.argv.slice(2),
       port        = (args[0] && /^\d+$/.test(args[0])) ? parseInt(args[0]) : 8063,
+      config      = args[1] === 'test' ? require('./config_test.json') : require('./config_local.json'),
+      cateArr     = config.category.split('|'),
+      docPath     = config.docPath,
       app         = new connect();
 
 
