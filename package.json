@@ -9,7 +9,7 @@
   "keywords": [
     "document"
   ],
-  "author": "LEJU front-end",
+  "author": "linfang",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.15.2",

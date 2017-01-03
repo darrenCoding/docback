@@ -77,8 +77,8 @@ app.use('/editor/', ( req, res, next ) => {
             filePath = config.markdown + route + '.md';
             if ( fs.existsSync(filePath) ) {
                 sendFile(filePath).then((filedata) => {
-                    let _parse       = Object.keys(querystring.parse(filedata,'---',null)),
-                        _obj         = querystring.parse(_parse[1],'\n',': '),
+                    let _parse       = filedata.split("---\n"),
+                        _obj         = querystring.parse(_parse[1], '\n', ': '),
                         _title       = _obj['title'],
                         _cate        = _obj['categories'];
                     data.title       = _title;
@@ -302,4 +302,4 @@ function dateFormate (date) {
 }
 
 http.createServer(app).listen(port)
-console.log('server run at %s port', port)
+console.log(`server run at ${port} port`)
